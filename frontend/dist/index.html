@@ -1,0 +1,86 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>OmniRouter</title>
+    <link rel="stylesheet" href="./styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <section class="panel">
+        <h1>OmniRouter</h1>
+        <p class="subtitle">Type once. Send to the selected app.</p>
+
+        <label for="targetSelect">Target</label>
+        <select id="targetSelect"></select>
+        <div id="shortcutLegend" class="shortcut-legend"></div>
+
+        <label for="promptInput">Prompt</label>
+        <textarea
+          id="promptInput"
+          rows="14"
+          placeholder="Enter your prompt here"
+        ></textarea>
+
+        <div class="actions">
+          <button id="settingsButton" type="button" class="secondary-button">Settings</button>
+          <button id="sendButton" type="button">Send</button>
+        </div>
+
+        <div id="statusMessage" class="status" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <div id="settingsModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="settingsTitle">
+      <div class="modal-panel">
+        <h2 id="settingsTitle">Settings</h2>
+
+        <label for="settingsDefaultTarget">Default Target</label>
+        <select id="settingsDefaultTarget"></select>
+
+        <label for="settingsTargetSelect">Target For Send Mode</label>
+        <select id="settingsTargetSelect"></select>
+
+        <label for="settingsTargetSendMode">Send Mode</label>
+        <select id="settingsTargetSendMode">
+          <option value="paste_enter">paste_enter</option>
+          <option value="paste_only">paste_only</option>
+        </select>
+
+        <div class="actions">
+          <button id="settingsTestButton" type="button" class="secondary-button">Test Target</button>
+        </div>
+
+        <label for="settingsHotkeyMode">Hotkey Mode</label>
+        <select id="settingsHotkeyMode">
+          <option value="toggle">toggle</option>
+          <option value="launcher">launcher</option>
+        </select>
+
+        <label class="checkbox-row">
+          <input id="settingsShowOnStartup" type="checkbox" />
+          <span>Show Window On Startup</span>
+        </label>
+
+        <label class="checkbox-row">
+          <input id="settingsAutoHideAfterSend" type="checkbox" />
+          <span>Auto Hide After Send</span>
+        </label>
+
+        <label for="settingsLauncherWidth">Launcher Window Width</label>
+        <input id="settingsLauncherWidth" type="number" min="1" step="1" />
+
+        <label for="settingsLauncherHeight">Launcher Window Height</label>
+        <input id="settingsLauncherHeight" type="number" min="1" step="1" />
+
+        <div class="actions modal-actions">
+          <button id="settingsCancelButton" type="button" class="secondary-button">Cancel</button>
+          <button id="settingsSaveButton" type="button">Save</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="./app.js"></script>
+  </body>
+</html>

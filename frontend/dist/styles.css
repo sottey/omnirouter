@@ -1,0 +1,444 @@
+@import url('https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap');
+
+:root {
+  /* Light Mode Color System */
+  --bg-app: #f5f5f7;
+  --bg-panel: rgba(255, 255, 255, 0.75);
+  --border-panel: rgba(0, 0, 0, 0.08);
+  --shadow-panel: 0 12px 40px rgba(0, 0, 0, 0.06), 0 1px 3px rgba(0, 0, 0, 0.02);
+  
+  --text-primary: #1d1d1f;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #86868b;
+  
+  --bg-input: rgba(255, 255, 255, 0.8);
+  --border-input: rgba(0, 0, 0, 0.12);
+  --border-input-focus: #0071e3;
+  --shadow-input-focus: 0 0 0 4px rgba(0, 113, 227, 0.15);
+  
+  --bg-button-primary: #0071e3;
+  --bg-button-primary-hover: #147ce5;
+  --text-button-primary: #ffffff;
+  
+  --bg-button-secondary: rgba(0, 0, 0, 0.03);
+  --border-button-secondary: rgba(0, 0, 0, 0.1);
+  --bg-button-secondary-hover: rgba(0, 0, 0, 0.06);
+  --text-button-secondary: #1d1d1f;
+  
+  --bg-chip: rgba(0, 0, 0, 0.04);
+  --border-chip: rgba(0, 0, 0, 0.05);
+  --bg-chip-hover: rgba(0, 0, 0, 0.08);
+  --bg-chip-active: #1d1d1f;
+  --text-chip-active: #ffffff;
+  
+  --accent-gradient: linear-gradient(135deg, #ff416c, #ff4b2b);
+  --blue-gradient: linear-gradient(135deg, #00c6ff, #0072ff);
+  
+  --modal-overlay: rgba(0, 0, 0, 0.25);
+  --modal-bg: rgba(255, 255, 255, 0.9);
+  
+  --status-success-bg: rgba(52, 199, 89, 0.12);
+  --status-success-text: #248a3d;
+  --status-error-bg: rgba(255, 59, 48, 0.1);
+  --status-error-text: #d32f2f;
+  --status-info-bg: rgba(0, 113, 227, 0.08);
+  --status-info-text: #0071e3;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root {
+    /* Dark Mode Color System */
+    --bg-app: #121212;
+    --bg-panel: rgba(28, 28, 30, 0.8);
+    --border-panel: rgba(255, 255, 255, 0.06);
+    --shadow-panel: 0 16px 48px rgba(0, 0, 0, 0.35), 0 1px 2px rgba(255, 255, 255, 0.05);
+    
+    --text-primary: #f5f5f7;
+    --text-secondary: #a1a1a6;
+    --text-tertiary: #86868b;
+    
+    --bg-input: rgba(44, 44, 46, 0.6);
+    --border-input: rgba(255, 255, 255, 0.1);
+    --border-input-focus: #0a84ff;
+    --shadow-input-focus: 0 0 0 4px rgba(10, 132, 255, 0.25);
+    
+    --bg-button-primary: #0a84ff;
+    --bg-button-primary-hover: #359aff;
+    --text-button-primary: #ffffff;
+    
+    --bg-button-secondary: rgba(255, 255, 255, 0.05);
+    --border-button-secondary: rgba(255, 255, 255, 0.08);
+    --bg-button-secondary-hover: rgba(255, 255, 255, 0.09);
+    --text-button-secondary: #f5f5f7;
+    
+    --bg-chip: rgba(255, 255, 255, 0.05);
+    --border-chip: rgba(255, 255, 255, 0.03);
+    --bg-chip-hover: rgba(255, 255, 255, 0.1);
+    --bg-chip-active: #f5f5f7;
+    --text-chip-active: #121212;
+    
+    --accent-gradient: linear-gradient(135deg, #f857a6, #ff5858);
+    --blue-gradient: linear-gradient(135deg, #0a84ff, #00c6ff);
+    
+    --modal-overlay: rgba(0, 0, 0, 0.55);
+    --modal-bg: rgba(44, 44, 46, 0.92);
+    
+    --status-success-bg: rgba(48, 209, 88, 0.15);
+    --status-success-text: #30d158;
+    --status-error-bg: rgba(255, 69, 58, 0.15);
+    --status-error-text: #ff453a;
+    --status-info-bg: rgba(10, 132, 255, 0.15);
+    --status-info-text: #0a84ff;
+  }
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  transition: background-color 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+html,
+body {
+  font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background-color: var(--bg-app);
+  color: var(--text-primary);
+  min-height: 100vh;
+  overflow: hidden;
+}
+
+.app-shell {
+  min-height: 100vh;
+  height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.panel {
+  width: 100%;
+  max-width: 800px;
+  height: 100%;
+  max-height: 900px;
+  min-height: 0;
+  background-color: var(--bg-panel);
+  border: 1px solid var(--border-panel);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+}
+
+h1 {
+  font-size: 30px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  background: var(--blue-gradient);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  margin-bottom: 4px;
+}
+
+.subtitle {
+  font-size: 14px;
+  font-weight: 400;
+  color: var(--text-secondary);
+  margin-bottom: 24px;
+}
+
+label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--text-secondary);
+  margin-bottom: 8px;
+}
+
+select,
+textarea,
+input {
+  width: 100%;
+  font-family: inherit;
+  font-size: 14px;
+  color: var(--text-primary);
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-input);
+  border-radius: 12px;
+  padding: 12px 16px;
+  outline: none;
+}
+
+select:focus,
+textarea:focus,
+input:focus {
+  border-color: var(--border-input-focus);
+  box-shadow: var(--shadow-input-focus);
+}
+
+select {
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%2386868b' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 14px center;
+  background-size: 16px;
+  padding-right: 40px;
+  min-height: 46px;
+  cursor: pointer;
+  margin-bottom: 16px;
+}
+
+/* Custom layout styles for the Target Selector row */
+.target-select-container {
+  display: flex;
+  flex-direction: column;
+}
+
+.shortcut-legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: -6px 0 20px;
+}
+
+.shortcut-chip {
+  font-size: 12px;
+  font-weight: 500;
+  padding: 6px 12px;
+  border-radius: 20px;
+  border: 1px solid var(--border-chip);
+  background-color: var(--bg-chip);
+  color: var(--text-primary);
+  cursor: pointer;
+  white-space: nowrap;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.shortcut-chip:hover {
+  background-color: var(--bg-chip-hover);
+  transform: translateY(-1px);
+}
+
+.shortcut-chip-active {
+  background-color: var(--bg-chip-active);
+  color: var(--text-chip-active);
+  border-color: var(--bg-chip-active);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+textarea {
+  flex: 1 1 auto;
+  min-height: 120px;
+  resize: none;
+  line-height: 1.5;
+  border-radius: 14px;
+}
+
+/* Custom Slim Scrollbars */
+textarea::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+textarea::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+textarea::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 4px;
+}
+
+@media (prefers-color-scheme: dark) {
+  textarea::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+textarea::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.24);
+}
+
+@media (prefers-color-scheme: dark) {
+  textarea::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.24);
+  }
+}
+
+.actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+button {
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  border: 0;
+  border-radius: 12px;
+  padding: 12px 24px;
+  cursor: pointer;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+button:active {
+  transform: scale(0.98);
+}
+
+button#sendButton {
+  background-color: var(--bg-button-primary);
+  color: var(--text-button-primary);
+  box-shadow: 0 4px 12px rgba(0, 113, 227, 0.2);
+}
+
+button#sendButton:hover:not(:disabled) {
+  background-color: var(--bg-button-primary-hover);
+  box-shadow: 0 6px 16px rgba(0, 113, 227, 0.3);
+}
+
+.secondary-button {
+  background-color: var(--bg-button-secondary);
+  border: 1px solid var(--border-button-secondary);
+  color: var(--text-button-secondary);
+}
+
+.secondary-button:hover:not(:disabled) {
+  background-color: var(--bg-button-secondary-hover);
+}
+
+button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+  transform: none;
+  box-shadow: none !important;
+}
+
+/* Styled Status Pill */
+.status {
+  font-size: 13px;
+  font-weight: 500;
+  min-height: 38px;
+  margin-top: 20px;
+  padding: 10px 16px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  opacity: 0;
+  transform: translateY(4px);
+  transition: all 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.status:not(:empty) {
+  opacity: 1;
+  transform: translateY(0);
+}
+
+.status.success {
+  background-color: var(--status-success-bg);
+  color: var(--status-success-text);
+  border: 1px solid rgba(52, 199, 89, 0.15);
+}
+
+.status.error {
+  background-color: var(--status-error-bg);
+  color: var(--status-error-text);
+  border: 1px solid rgba(255, 59, 48, 0.15);
+}
+
+/* When status is not success or error, it acts as an informative/loading status */
+.status:not(.success):not(.error):not(:empty) {
+  background-color: var(--status-info-bg);
+  color: var(--status-info-text);
+  border: 1px solid rgba(0, 113, 227, 0.1);
+}
+
+/* Modals */
+.modal {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: var(--modal-overlay);
+  padding: 16px;
+  z-index: 1000;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  animation: fadeIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-panel {
+  width: 100%;
+  max-width: 480px;
+  background-color: var(--modal-bg);
+  border: 1px solid var(--border-panel);
+  border-radius: 20px;
+  padding: 28px;
+  box-shadow: var(--shadow-panel);
+  display: flex;
+  flex-direction: column;
+  animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.modal-panel h2 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  letter-spacing: -0.4px;
+}
+
+.modal-panel select,
+.modal-panel input {
+  margin-bottom: 14px;
+}
+
+.checkbox-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 6px 0 16px;
+  cursor: pointer;
+}
+
+.checkbox-row input {
+  width: 18px;
+  height: 18px;
+  margin: 0;
+  accent-color: var(--bg-button-primary);
+  cursor: pointer;
+}
+
+.checkbox-row span {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-primary);
+}
+
+.modal-actions {
+  margin-top: 12px;
+}
+
+/* Keyframes */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes scaleIn {
+  from { transform: scale(0.96); opacity: 0; }
+  to { transform: scale(1); opacity: 1; }
+}

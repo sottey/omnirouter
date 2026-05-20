@@ -1,0 +1,18 @@
+# Compiled Binaries
+omnirouter
+build/bin/
+
+# Local Logs & Outputs
+app.log
+*.log
+*.test
+*.out
+
+# Local Config containing private paths / setups
+config.json
+secrets.sh
+start.sh
+
+# macOS System Files
+.DS_Store
+**/.DS_Store

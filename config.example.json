@@ -1,0 +1,78 @@
+{
+  "showWindowOnStartup": false,
+  "defaultTarget": "Auto",
+  "autoHideAfterSend": true,
+  "hotkeyMode": "toggle",
+  "launcherWindowWidth": 600,
+  "launcherWindowHeight": 800,
+  "windowWidth": 768,
+  "windowHeight": 993,
+  "router": {
+    "provider": "openai",
+    "model": "gpt-4o-mini",
+    "apiKeyEnv": "OPENAI_API_KEY"
+  },
+  "targets": [
+    {
+      "name": "Auto",
+      "type": "auto",
+      "description": "Choose the best target for the prompt automatically.",
+      "sendMode": "paste_enter",
+      "startupDelayMs": 1800
+    },
+    {
+      "name": "ChatGPT",
+      "type": "mac_app",
+      "app": "ChatGPT",
+      "description": "Strong generalist for coding, structured writing, and broad problem solving.",
+      "shortcut": "Ctrl+1",
+      "sendMode": "paste_enter",
+      "startupDelayMs": 1800
+    },
+    {
+      "name": "Claude",
+      "type": "mac_app",
+      "app": "Claude",
+      "description": "Good for careful reasoning, editing, and long-form analysis.",
+      "shortcut": "Ctrl+2",
+      "sendMode": "paste_enter",
+      "startupDelayMs": 1800
+    },
+    {
+      "name": "Gemini",
+      "type": "mac_app",
+      "app": "Gemini",
+      "description": "General-purpose assistant for broad everyday tasks.",
+      "shortcut": "Ctrl+3",
+      "sendMode": "paste_enter",
+      "startupDelayMs": 1800
+    },
+    {
+      "name": "OpenWebUI",
+      "type": "mac_app",
+      "app": "/Users/YOUR_USERNAME/Applications/Chrome Apps.localized/OpenWebUI.app",
+      "description": "Use this for local or self-hosted model workflows exposed through OpenWebUI.",
+      "shortcut": "Ctrl+4",
+      "sendMode": "paste_enter",
+      "startupDelayMs": 1800
+    },
+    {
+      "name": "Alexa+",
+      "type": "mac_app",
+      "app": "/Users/YOUR_USERNAME/Applications/Chrome Apps.localized/Alexa.app",
+      "description": "Use this for assistant-style, conversational tasks where Alexa-specific behavior is preferred.",
+      "shortcut": "Ctrl+5",
+      "sendMode": "paste_enter",
+      "shortcutDelayMs": 1800
+    },
+    {
+      "name": "Codex",
+      "type": "mac_app",
+      "app": "Codex",
+      "description": "Use this for deep dive coding",
+      "shortcut": "Ctrl+6",
+      "sendMode": "paste_enter",
+      "startupDelayMs": 1800
+    }
+  ]
+}

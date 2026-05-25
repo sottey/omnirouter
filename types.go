@@ -31,4 +31,14 @@ type Target struct {
 	Shortcut       string `json:"shortcut,omitempty"`
 	SendMode       string `json:"sendMode"`
 	StartupDelayMs int    `json:"startupDelayMs"`
+	Provider       string `json:"provider,omitempty"`
+	Model          string `json:"model,omitempty"`
+	APIKeyEnv      string `json:"apiKeyEnv,omitempty"`
+	SystemPrompt   string `json:"systemPrompt,omitempty"`
+}
+
+type SendPromptResult struct {
+	TargetName   string `json:"targetName"`
+	ResponseText string `json:"responseText,omitempty"`
+	IsAPI        bool   `json:"isApi"`
 }

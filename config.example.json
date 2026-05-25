@@ -63,7 +63,7 @@
       "description": "Use this for assistant-style, conversational tasks where Alexa-specific behavior is preferred.",
       "shortcut": "Ctrl+5",
       "sendMode": "paste_enter",
-      "shortcutDelayMs": 1800
+      "startupDelayMs": 1800
     },
     {
       "name": "Codex",

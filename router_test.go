@@ -327,3 +327,99 @@ func TestResolveTarget_AutoChoosesKnownTarget(t *testing.T) {
 		t.Fatalf("ResolveTarget auto result unexpected: target=%v name=%q", target, name)
 	}
 }
+
+func TestRoutePrompt_Gemini(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.URL.Path, "generateContent") {
+			http.Error(w, "bad path", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprint(w, `{
+			"candidates": [
+				{
+					"content": {
+						"parts": [
+							{
+								"text": "{\"target\": \"ChatGPT\"}"
+							}
+						]
+					},
+					"finishReason": "STOP"
+				}
+			]
+		}`)
+	}))
+	defer server.Close()
+	withPatchedDefaultClient(t, server.URL)
+
+	t.Setenv("TEST_GEMINI_KEY", "gemini123")
+	config := &Config{
+		Router: &Router{
+			Provider:  "gemini",
+			Model:     "gemini-1.5-flash",
+			APIKeyEnv: "TEST_GEMINI_KEY",
+		},
+		Targets: []Target{
+			{Name: "Auto", Type: "auto"},
+			{Name: "ChatGPT", Type: "mac_app", App: "ChatGPT"},
+			{Name: "Claude", Type: "mac_app", App: "Claude"},
+		},
+	}
+
+	got, err := RoutePrompt(config, "route me please")
+	if err != nil {
+		t.Fatalf("RoutePrompt (gemini) returned error: %v", err)
+	}
+	if got != "ChatGPT" {
+		t.Fatalf("RoutePrompt (gemini) = %q, want %q", got, "ChatGPT")
+	}
+}
+
+func TestRoutePrompt_Anthropic(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/v1/messages" {
+			http.Error(w, "bad path", http.StatusNotFound)
+			return
+		}
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusOK)
+		_, _ = fmt.Fprint(w, `{
+			"content": [
+				{
+					"type": "tool_use",
+					"id": "toolu_123",
+					"name": "route_choice",
+					"input": {
+						"target": "Claude"
+					}
+				}
+			]
+		}`)
+	}))
+	defer server.Close()
+	withPatchedDefaultClient(t, server.URL)
+
+	t.Setenv("TEST_ANTHROPIC_KEY", "claude123")
+	config := &Config{
+		Router: &Router{
+			Provider:  "anthropic",
+			Model:     "claude-3-5-sonnet-latest",
+			APIKeyEnv: "TEST_ANTHROPIC_KEY",
+		},
+		Targets: []Target{
+			{Name: "Auto", Type: "auto"},
+			{Name: "ChatGPT", Type: "mac_app", App: "ChatGPT"},
+			{Name: "Claude", Type: "mac_app", App: "Claude"},
+		},
+	}
+
+	got, err := RoutePrompt(config, "route me please")
+	if err != nil {
+		t.Fatalf("RoutePrompt (anthropic) returned error: %v", err)
+	}
+	if got != "Claude" {
+		t.Fatalf("RoutePrompt (anthropic) = %q, want %q", got, "Claude")
+	}
+}

@@ -84,21 +84,36 @@ func (a *App) SaveConfig(config Config) error {
 	return nil
 }
 
-func (a *App) SendPrompt(targetName string, prompt string) (string, error) {
+func (a *App) SendPrompt(targetName string, prompt string) (SendPromptResult, error) {
 	if a.config == nil {
-		return "", fmt.Errorf("config not loaded")
+		return SendPromptResult{}, fmt.Errorf("config not loaded")
 	}
 
 	target, chosenTargetName, err := ResolveTarget(a.config, targetName, prompt)
 	if err != nil {
-		return "", err
+		return SendPromptResult{}, err
+	}
+
+	if target.Type == "api" {
+		responseText, err := CallLLMAPI(target.Provider, target.Model, target.APIKeyEnv, target.SystemPrompt, prompt)
+		if err != nil {
+			return SendPromptResult{}, err
+		}
+		return SendPromptResult{
+			TargetName:   chosenTargetName,
+			ResponseText: responseText,
+			IsAPI:        true,
+		}, nil
 	}
 
 	if err := SendPromptToTarget(*target, prompt); err != nil {
-		return "", err
+		return SendPromptResult{}, err
 	}
 
-	return chosenTargetName, nil
+	return SendPromptResult{
+		TargetName: chosenTargetName,
+		IsAPI:      false,
+	}, nil
 }
 
 func (a *App) TestTarget(targetName string) error {

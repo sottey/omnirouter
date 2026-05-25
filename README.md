@@ -1,6 +1,6 @@
 # OmniRouter
 
-OmniRouter is a small macOS-first desktop app that lets you type a prompt once, select a configured LLM target, and send the prompt to that app.
+OmniRouter is a small macOS-first desktop app that lets you type a prompt once, select a configured LLM target, and either send the prompt to that app or get a direct API response from a configured provider.
 
 ## Requirements
 
@@ -107,7 +107,7 @@ Optional send and hotkey behavior:
 - `hotkeyMode: "launcher"` uses the global hotkey to open a compact prompt-focused launcher window
 - `autoHideAfterSend: true` hides the window after a successful send
 
-OpenAI router configuration for an explicit `Auto` target:
+Router configuration for an explicit `Auto` target:
 
 ```json
 {
@@ -119,9 +119,9 @@ OpenAI router configuration for an explicit `Auto` target:
 }
 ```
 
-The OpenAI API key is loaded from the environment variable named by `router.apiKeyEnv`.
+The router API key is loaded from the environment variable named by `router.apiKeyEnv`.
 
-Each target currently supports:
+Example `mac_app` target:
 
 ```json
 {
@@ -161,15 +161,34 @@ Per-target descriptions are optional, but they improve routing quality:
 }
 ```
 
+An API target looks like this:
+
+```json
+{
+  "name": "OpenAI API",
+  "type": "api",
+  "provider": "openai",
+  "model": "gpt-4o-mini",
+  "apiKeyEnv": "OPENAI_API_KEY",
+  "systemPrompt": "You are a concise assistant."
+}
+```
+
+Supported API `provider` values:
+- `openai`
+- `gemini`
+- `anthropic`
+
+API targets return the response inside the OmniRouter window instead of pasting into another app.
+
 ## Current MVP Limitations
 
 - macOS only
-- `mac_app` targets only
-- No provider APIs
+- macOS automation is only implemented for `mac_app` targets
 - No auth or account handling
 - No prompt history
 - No response scraping
-- No model selection
+- No per-send model selection UI
 
 ## Run Automatically At Login
 

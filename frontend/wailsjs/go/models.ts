@@ -9,6 +9,10 @@ export namespace main {
 	    shortcut?: string;
 	    sendMode: string;
 	    startupDelayMs: number;
+	    provider?: string;
+	    model?: string;
+	    apiKeyEnv?: string;
+	    systemPrompt?: string;
 	
 	    static createFrom(source: any = {}) {
 	        return new Target(source);
@@ -24,6 +28,10 @@ export namespace main {
 	        this.shortcut = source["shortcut"];
 	        this.sendMode = source["sendMode"];
 	        this.startupDelayMs = source["startupDelayMs"];
+	        this.provider = source["provider"];
+	        this.model = source["model"];
+	        this.apiKeyEnv = source["apiKeyEnv"];
+	        this.systemPrompt = source["systemPrompt"];
 	    }
 	}
 	export class Router {
@@ -97,6 +105,22 @@ export namespace main {
 		}
 	}
 	
+	export class SendPromptResult {
+	    targetName: string;
+	    responseText?: string;
+	    isApi: boolean;
+	
+	    static createFrom(source: any = {}) {
+	        return new SendPromptResult(source);
+	    }
+	
+	    constructor(source: any = {}) {
+	        if ('string' === typeof source) source = JSON.parse(source);
+	        this.targetName = source["targetName"];
+	        this.responseText = source["responseText"];
+	        this.isApi = source["isApi"];
+	    }
+	}
 
 }
 

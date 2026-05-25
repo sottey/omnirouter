@@ -384,6 +384,7 @@ button:disabled {
 .modal-panel {
   width: 100%;
   max-width: 480px;
+  max-height: 90vh;
   background-color: var(--modal-bg);
   border: 1px solid var(--border-panel);
   border-radius: 20px;
@@ -392,6 +393,7 @@ button:disabled {
   display: flex;
   flex-direction: column;
   animation: scaleIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
 }
 
 .modal-panel h2 {
@@ -402,8 +404,57 @@ button:disabled {
 }
 
 .modal-panel select,
-.modal-panel input {
+.modal-panel input,
+.modal-panel textarea {
   margin-bottom: 14px;
+}
+
+.settings-scroll-container {
+  flex: 1 1 auto;
+  overflow-y: auto;
+  padding-right: 8px;
+  margin-bottom: 20px;
+}
+
+.settings-scroll-container::-webkit-scrollbar {
+  width: 6px;
+}
+
+.settings-scroll-container::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.settings-scroll-container::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .settings-scroll-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+.settings-group h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--border-input-focus);
+  margin: 4px 0 16px;
+  border-bottom: 1px dashed var(--border-panel);
+  padding-bottom: 6px;
+}
+
+.settings-divider {
+  height: 1px;
+  background-color: var(--border-panel);
+  margin: 18px 0;
+}
+
+.group-actions {
+  margin: -4px 0 16px;
+  justify-content: flex-start;
 }
 
 .checkbox-row {
@@ -441,4 +492,149 @@ button:disabled {
 @keyframes scaleIn {
   from { transform: scale(0.96); opacity: 0; }
   to { transform: scale(1); opacity: 1; }
+}
+
+/* Response Panel styles */
+.response-panel {
+  display: flex;
+  flex-direction: column;
+  background-color: var(--bg-input);
+  border: 1px solid var(--border-panel);
+  border-radius: 14px;
+  padding: 16px 20px;
+  margin-top: 20px;
+  max-height: 300px;
+  animation: fadeIn 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+  overflow: hidden;
+}
+
+.response-panel.hidden {
+  display: none;
+}
+
+.response-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  border-bottom: 1px solid var(--border-panel);
+  padding-bottom: 8px;
+}
+
+.response-header h3 {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.8px;
+  color: var(--border-input-focus);
+}
+
+.response-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-button {
+  font-size: 11px;
+  padding: 4px 10px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.response-text {
+  flex: 1 1 auto;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-primary);
+  overflow-y: auto;
+  padding-right: 4px;
+  user-select: text;
+}
+
+/* Custom scrollbars inside response text */
+.response-text::-webkit-scrollbar {
+  width: 6px;
+}
+
+.response-text::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.response-text::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.12);
+  border-radius: 3px;
+}
+
+@media (prefers-color-scheme: dark) {
+  .response-text::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.12);
+  }
+}
+
+/* Markdown styling inside response text */
+.response-text h1,
+.response-text h2,
+.response-text h3 {
+  color: var(--text-primary);
+  margin: 12px 0 6px;
+  font-weight: 600;
+}
+
+.response-text h1 { font-size: 18px; }
+.response-text h2 { font-size: 16px; }
+.response-text h3 { font-size: 14px; }
+
+.response-text p {
+  margin-bottom: 10px;
+}
+
+.response-text strong {
+  font-weight: 600;
+}
+
+.response-text code {
+  font-family: SFMono-Regular, Consolas, "Liberation Mono", Menlo, monospace;
+  font-size: 12px;
+  background-color: rgba(0, 0, 0, 0.05);
+  padding: 2px 6px;
+  border-radius: 4px;
+  color: #ff3b30;
+}
+
+@media (prefers-color-scheme: dark) {
+  .response-text code {
+    background-color: rgba(255, 255, 255, 0.08);
+    color: #ff453a;
+  }
+}
+
+.response-text pre {
+  background-color: rgba(0, 0, 0, 0.04);
+  border: 1px solid var(--border-panel);
+  border-radius: 8px;
+  padding: 12px;
+  margin: 12px 0;
+  overflow-x: auto;
+}
+
+@media (prefers-color-scheme: dark) {
+  .response-text pre {
+    background-color: rgba(255, 255, 255, 0.04);
+  }
+}
+
+.response-text pre code {
+  color: inherit;
+  background-color: transparent;
+  padding: 0;
+  border-radius: 0;
+}
+
+.response-text ul {
+  padding-left: 20px;
+  margin-bottom: 10px;
+}
+
+.response-text li {
+  margin-bottom: 4px;
 }

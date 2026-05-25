@@ -22,7 +22,7 @@ export function SaveConfig(arg1:main.Config):Promise<void>;
 
 export function SaveWindowState():Promise<void>;
 
-export function SendPrompt(arg1:string,arg2:string):Promise<string>;
+export function SendPrompt(arg1:string,arg2:string):Promise<main.SendPromptResult>;
 
 export function ShowLauncherWindow():Promise<void>;
 

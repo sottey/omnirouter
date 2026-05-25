@@ -71,16 +71,30 @@ func (c *Config) ApplyDefaultsAndValidate() error {
 			c.Router.Provider = "openai"
 		}
 
-		if c.Router.Provider != "openai" {
-			return fmt.Errorf("router.provider must be openai")
+		if c.Router.Provider != "openai" && c.Router.Provider != "gemini" && c.Router.Provider != "anthropic" {
+			return fmt.Errorf("router.provider must be one of: openai, gemini, anthropic")
 		}
 
 		if c.Router.Model == "" {
-			c.Router.Model = "gpt-4o-mini"
+			switch c.Router.Provider {
+			case "openai":
+				c.Router.Model = "gpt-4o-mini"
+			case "gemini":
+				c.Router.Model = "gemini-1.5-flash"
+			case "anthropic":
+				c.Router.Model = "claude-3-5-sonnet-latest"
+			}
 		}
 
 		if c.Router.APIKeyEnv == "" {
-			c.Router.APIKeyEnv = "OPENAI_API_KEY"
+			switch c.Router.Provider {
+			case "openai":
+				c.Router.APIKeyEnv = "OPENAI_API_KEY"
+			case "gemini":
+				c.Router.APIKeyEnv = "GEMINI_API_KEY"
+			case "anthropic":
+				c.Router.APIKeyEnv = "ANTHROPIC_API_KEY"
+			}
 		}
 	}
 
@@ -98,6 +112,10 @@ func (c *Config) ApplyDefaultsAndValidate() error {
 		target.Description = strings.TrimSpace(target.Description)
 		target.Shortcut = strings.TrimSpace(target.Shortcut)
 		target.SendMode = strings.TrimSpace(strings.ToLower(target.SendMode))
+		target.Provider = strings.TrimSpace(strings.ToLower(target.Provider))
+		target.Model = strings.TrimSpace(target.Model)
+		target.APIKeyEnv = strings.TrimSpace(target.APIKeyEnv)
+		target.SystemPrompt = strings.TrimSpace(target.SystemPrompt)
 
 		if target.Name == "" {
 			return fmt.Errorf("target at index %d is missing name", i)
@@ -124,6 +142,35 @@ func (c *Config) ApplyDefaultsAndValidate() error {
 
 		if target.Type == "auto" && c.Router == nil {
 			return fmt.Errorf("target %q requires router config for type auto", target.Name)
+		}
+
+		if target.Type == "api" {
+			if target.Provider == "" {
+				return fmt.Errorf("target %q requires provider for type api", target.Name)
+			}
+			if target.Provider != "openai" && target.Provider != "gemini" && target.Provider != "anthropic" {
+				return fmt.Errorf("target %q has unsupported provider %q (must be one of: openai, gemini, anthropic)", target.Name, target.Provider)
+			}
+			if target.Model == "" {
+				switch target.Provider {
+				case "openai":
+					target.Model = "gpt-4o-mini"
+				case "gemini":
+					target.Model = "gemini-1.5-flash"
+				case "anthropic":
+					target.Model = "claude-3-5-sonnet-latest"
+				}
+			}
+			if target.APIKeyEnv == "" {
+				switch target.Provider {
+				case "openai":
+					target.APIKeyEnv = "OPENAI_API_KEY"
+				case "gemini":
+					target.APIKeyEnv = "GEMINI_API_KEY"
+				case "anthropic":
+					target.APIKeyEnv = "ANTHROPIC_API_KEY"
+				}
+			}
 		}
 	}
 

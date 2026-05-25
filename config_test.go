@@ -38,33 +38,117 @@ func TestApplyDefaultsAndValidate_SetsDefaults(t *testing.T) {
 }
 
 func TestApplyDefaultsAndValidate_RouterDefaults(t *testing.T) {
-	config := Config{
+	// 1. OpenAI (Default)
+	configOpenAI := Config{
 		Router: &Router{},
 		Targets: []Target{
-			{
-				Name: "Auto",
-				Type: "auto",
-			},
-			{
-				Name: "ChatGPT",
-				Type: "mac_app",
-				App:  "ChatGPT",
-			},
+			{Name: "Auto", Type: "auto"},
+			{Name: "ChatGPT", Type: "mac_app", App: "ChatGPT"},
 		},
 	}
-
-	if err := config.ApplyDefaultsAndValidate(); err != nil {
+	if err := configOpenAI.ApplyDefaultsAndValidate(); err != nil {
 		t.Fatalf("ApplyDefaultsAndValidate returned error: %v", err)
 	}
+	if configOpenAI.Router.Provider != "openai" {
+		t.Fatalf("Router.Provider default = %q, want %q", configOpenAI.Router.Provider, "openai")
+	}
+	if configOpenAI.Router.Model != "gpt-4o-mini" {
+		t.Fatalf("Router.Model default = %q, want %q", configOpenAI.Router.Model, "gpt-4o-mini")
+	}
+	if configOpenAI.Router.APIKeyEnv != "OPENAI_API_KEY" {
+		t.Fatalf("Router.APIKeyEnv default = %q, want %q", configOpenAI.Router.APIKeyEnv, "OPENAI_API_KEY")
+	}
 
-	if config.Router.Provider != "openai" {
-		t.Fatalf("Router.Provider default = %q, want %q", config.Router.Provider, "openai")
+	// 2. Gemini
+	configGemini := Config{
+		Router: &Router{Provider: "gemini"},
+		Targets: []Target{
+			{Name: "Auto", Type: "auto"},
+			{Name: "ChatGPT", Type: "mac_app", App: "ChatGPT"},
+		},
 	}
-	if config.Router.Model != "gpt-4o-mini" {
-		t.Fatalf("Router.Model default = %q, want %q", config.Router.Model, "gpt-4o-mini")
+	if err := configGemini.ApplyDefaultsAndValidate(); err != nil {
+		t.Fatalf("ApplyDefaultsAndValidate returned error: %v", err)
 	}
-	if config.Router.APIKeyEnv != "OPENAI_API_KEY" {
-		t.Fatalf("Router.APIKeyEnv default = %q, want %q", config.Router.APIKeyEnv, "OPENAI_API_KEY")
+	if configGemini.Router.Provider != "gemini" {
+		t.Fatalf("Router.Provider = %q, want %q", configGemini.Router.Provider, "gemini")
+	}
+	if configGemini.Router.Model != "gemini-1.5-flash" {
+		t.Fatalf("Router.Model default = %q, want %q", configGemini.Router.Model, "gemini-1.5-flash")
+	}
+	if configGemini.Router.APIKeyEnv != "GEMINI_API_KEY" {
+		t.Fatalf("Router.APIKeyEnv default = %q, want %q", configGemini.Router.APIKeyEnv, "GEMINI_API_KEY")
+	}
+
+	// 3. Anthropic
+	configAnthropic := Config{
+		Router: &Router{Provider: "anthropic"},
+		Targets: []Target{
+			{Name: "Auto", Type: "auto"},
+			{Name: "ChatGPT", Type: "mac_app", App: "ChatGPT"},
+		},
+	}
+	if err := configAnthropic.ApplyDefaultsAndValidate(); err != nil {
+		t.Fatalf("ApplyDefaultsAndValidate returned error: %v", err)
+	}
+	if configAnthropic.Router.Provider != "anthropic" {
+		t.Fatalf("Router.Provider = %q, want %q", configAnthropic.Router.Provider, "anthropic")
+	}
+	if configAnthropic.Router.Model != "claude-3-5-sonnet-latest" {
+		t.Fatalf("Router.Model default = %q, want %q", configAnthropic.Router.Model, "claude-3-5-sonnet-latest")
+	}
+	if configAnthropic.Router.APIKeyEnv != "ANTHROPIC_API_KEY" {
+		t.Fatalf("Router.APIKeyEnv default = %q, want %q", configAnthropic.Router.APIKeyEnv, "ANTHROPIC_API_KEY")
+	}
+}
+
+func TestApplyDefaultsAndValidate_APIDefaults(t *testing.T) {
+	// OpenAI API target defaults
+	configOpenAI := Config{
+		Targets: []Target{
+			{Name: "OpenAI API", Type: "api", Provider: "openai"},
+		},
+	}
+	if err := configOpenAI.ApplyDefaultsAndValidate(); err != nil {
+		t.Fatalf("ApplyDefaultsAndValidate returned error: %v", err)
+	}
+	if configOpenAI.Targets[0].Model != "gpt-4o-mini" {
+		t.Fatalf("API model default = %q, want %q", configOpenAI.Targets[0].Model, "gpt-4o-mini")
+	}
+	if configOpenAI.Targets[0].APIKeyEnv != "OPENAI_API_KEY" {
+		t.Fatalf("API key env default = %q, want %q", configOpenAI.Targets[0].APIKeyEnv, "OPENAI_API_KEY")
+	}
+
+	// Gemini API target defaults
+	configGemini := Config{
+		Targets: []Target{
+			{Name: "Gemini API", Type: "api", Provider: "gemini"},
+		},
+	}
+	if err := configGemini.ApplyDefaultsAndValidate(); err != nil {
+		t.Fatalf("ApplyDefaultsAndValidate returned error: %v", err)
+	}
+	if configGemini.Targets[0].Model != "gemini-1.5-flash" {
+		t.Fatalf("API model default = %q, want %q", configGemini.Targets[0].Model, "gemini-1.5-flash")
+	}
+	if configGemini.Targets[0].APIKeyEnv != "GEMINI_API_KEY" {
+		t.Fatalf("API key env default = %q, want %q", configGemini.Targets[0].APIKeyEnv, "GEMINI_API_KEY")
+	}
+
+	// Anthropic API target defaults
+	configAnthropic := Config{
+		Targets: []Target{
+			{Name: "Anthropic API", Type: "api", Provider: "anthropic"},
+		},
+	}
+	if err := configAnthropic.ApplyDefaultsAndValidate(); err != nil {
+		t.Fatalf("ApplyDefaultsAndValidate returned error: %v", err)
+	}
+	if configAnthropic.Targets[0].Model != "claude-3-5-sonnet-latest" {
+		t.Fatalf("API model default = %q, want %q", configAnthropic.Targets[0].Model, "claude-3-5-sonnet-latest")
+	}
+	if configAnthropic.Targets[0].APIKeyEnv != "ANTHROPIC_API_KEY" {
+		t.Fatalf("API key env default = %q, want %q", configAnthropic.Targets[0].APIKeyEnv, "ANTHROPIC_API_KEY")
 	}
 }
 
@@ -156,12 +240,30 @@ func TestApplyDefaultsAndValidate_Errors(t *testing.T) {
 		{
 			name: "invalid router provider",
 			config: Config{
-				Router: &Router{Provider: "anthropic"},
+				Router: &Router{Provider: "invalid-provider"},
 				Targets: []Target{
 					{Name: "ChatGPT", Type: "mac_app", App: "ChatGPT"},
 				},
 			},
-			errContains: "router.provider must be openai",
+			errContains: "router.provider must be one of: openai, gemini, anthropic",
+		},
+		{
+			name: "api target missing provider",
+			config: Config{
+				Targets: []Target{
+					{Name: "API Target", Type: "api"},
+				},
+			},
+			errContains: "requires provider for type api",
+		},
+		{
+			name: "api target invalid provider",
+			config: Config{
+				Targets: []Target{
+					{Name: "API Target", Type: "api", Provider: "invalid-provider"},
+				},
+			},
+			errContains: "has unsupported provider",
 		},
 		{
 			name: "default target not found",

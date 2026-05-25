@@ -22,6 +22,14 @@ const settingsShowOnStartup = document.getElementById("settingsShowOnStartup");
 const settingsAutoHideAfterSend = document.getElementById("settingsAutoHideAfterSend");
 const settingsLauncherWidth = document.getElementById("settingsLauncherWidth");
 const settingsLauncherHeight = document.getElementById("settingsLauncherHeight");
+const settingsDeciderProvider = document.getElementById("settingsDeciderProvider");
+const settingsDeciderModel = document.getElementById("settingsDeciderModel");
+const settingsDeciderKeyEnv = document.getElementById("settingsDeciderKeyEnv");
+const settingsDeciderSystemPrompt = document.getElementById("settingsDeciderSystemPrompt");
+const responsePanel = document.getElementById("responsePanel");
+const responseTextContainer = document.getElementById("responseText");
+const copyResponseButton = document.getElementById("copyResponseButton");
+const clearResponseButton = document.getElementById("clearResponseButton");
 const settingsCancelButton = document.getElementById("settingsCancelButton");
 const settingsSaveButton = document.getElementById("settingsSaveButton");
 let currentConfig = null;
@@ -90,6 +98,14 @@ function openSettingsModal() {
   settingsAutoHideAfterSend.checked = currentConfig.autoHideAfterSend === true;
   settingsLauncherWidth.value = String(currentConfig.launcherWindowWidth || 760);
   settingsLauncherHeight.value = String(currentConfig.launcherWindowHeight || 280);
+
+  const router = currentConfig.router || {};
+  settingsDeciderProvider.value = router.provider || "openai";
+  settingsDeciderModel.value = router.model || "";
+  settingsDeciderKeyEnv.value = router.apiKeyEnv || "";
+  settingsDeciderSystemPrompt.value = router.systemPrompt || "";
+  updateDeciderPlaceholders(settingsDeciderProvider.value);
+
   if (editableTargets.length > 0) {
     settingsTargetSelect.value = editableTargets[0].name;
     settingsTargetSendMode.value = settingsSendModeByTarget[editableTargets[0].name] || "paste_enter";
@@ -141,6 +157,11 @@ async function saveSettings() {
     };
   });
 
+  const deciderProvider = settingsDeciderProvider.value;
+  const deciderModel = settingsDeciderModel.value.trim();
+  const deciderKeyEnv = settingsDeciderKeyEnv.value.trim();
+  const deciderSystemPrompt = settingsDeciderSystemPrompt.value.trim();
+
   const nextConfig = {
     ...currentConfig,
     defaultTarget: settingsDefaultTarget.value.trim(),
@@ -149,6 +170,12 @@ async function saveSettings() {
     autoHideAfterSend: settingsAutoHideAfterSend.checked,
     launcherWindowWidth: launcherWidth,
     launcherWindowHeight: launcherHeight,
+    router: {
+      provider: deciderProvider,
+      model: deciderModel,
+      apiKeyEnv: deciderKeyEnv,
+      systemPrompt: deciderSystemPrompt,
+    },
     targets: nextTargets,
   };
 
@@ -321,6 +348,72 @@ async function loadConfig(options = {}) {
   }
 }
 
+function renderMarkdown(text) {
+  if (!text) return "";
+  
+  // Escape HTML to prevent injection
+  let html = text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+
+  // Code blocks (fenced)
+  html = html.replace(/```([\s\S]*?)```/g, (match, code) => {
+    const trimmedCode = code.replace(/^\w+\n/, "").trim();
+    return `<pre><code>${trimmedCode}</code></pre>`;
+  });
+
+  // Inline code
+  html = html.replace(/`([^`]+)`/g, "<code>$1</code>");
+
+  // Headings
+  html = html.replace(/^### (.*$)/gim, "<h3>$1</h3>");
+  html = html.replace(/^## (.*$)/gim, "<h2>$1</h2>");
+  html = html.replace(/^# (.*$)/gim, "<h1>$1</h1>");
+
+  // Bold / Italic
+  html = html.replace(/\*\*([^*]+)\*\*/g, "<strong>$1</strong>");
+  html = html.replace(/\*([^*]+)\*/g, "<em>$1</em>");
+
+  // Split into lines for lists and paragraphs
+  const lines = html.split("\n");
+  let inList = false;
+  const processedLines = [];
+
+  for (let line of lines) {
+    const trimmed = line.trim();
+    
+    if (trimmed.startsWith("- ") || trimmed.startsWith("* ")) {
+      if (!inList) {
+        processedLines.push("<ul>");
+        inList = true;
+      }
+      processedLines.push(`<li>${trimmed.slice(2)}</li>`);
+    } else {
+      if (inList) {
+        processedLines.push("</ul>");
+        inList = false;
+      }
+      if (trimmed === "" && processedLines.length > 0 && processedLines[processedLines.length - 1] !== "<br/>") {
+        processedLines.push("<br/>");
+      } else if (trimmed !== "") {
+        const lastTag = trimmed.slice(0, 4);
+        if (lastTag !== "<pre" && lastTag !== "</pr" && lastTag !== "<h1" && lastTag !== "<h2" && lastTag !== "<h3" && lastTag !== "</h1" && lastTag !== "</h2" && lastTag !== "</h3") {
+          processedLines.push(`<p>${line}</p>`);
+        } else {
+          processedLines.push(line);
+        }
+      }
+    }
+  }
+
+  if (inList) {
+    processedLines.push("</ul>");
+  }
+
+  return processedLines.join("\n");
+}
+
 async function sendPrompt() {
   const targetName = targetSelect.value;
   const prompt = promptInput.value;
@@ -340,16 +433,26 @@ async function sendPrompt() {
 
   try {
     const bindings = await getAppBindings();
-    const chosenTargetName = await bindings.SendPrompt(targetName, prompt);
-    promptInput.value = "";
-    promptInput.focus();
-    if (currentConfig && currentConfig.autoHideAfterSend) {
-      await bindings.HideMainWindow();
-    }
-    if (targetName === chosenTargetName) {
-      setStatus(`Sent to ${chosenTargetName}.`, "success");
+    const result = await bindings.SendPrompt(targetName, prompt);
+    const chosenTargetName = result.targetName;
+
+    if (result.isApi) {
+      responseTextContainer.innerHTML = renderMarkdown(result.responseText);
+      responsePanel.classList.remove("hidden");
+      setStatus(`Response received from ${chosenTargetName}.`, "success");
     } else {
-      setStatus(`Auto selected ${chosenTargetName}. Sent successfully.`, "success");
+      responsePanel.classList.add("hidden");
+      responseTextContainer.innerHTML = "";
+      promptInput.value = "";
+      promptInput.focus();
+      if (currentConfig && currentConfig.autoHideAfterSend) {
+        await bindings.HideMainWindow();
+      }
+      if (targetName === chosenTargetName) {
+        setStatus(`Sent to ${chosenTargetName}.`, "success");
+      } else {
+        setStatus(`Auto selected ${chosenTargetName}. Sent successfully.`, "success");
+      }
     }
   } catch (error) {
     setStatus(error.message || String(error), "error");
@@ -400,6 +503,23 @@ settingsSaveButton.addEventListener("click", () => {
   void saveSettings();
 });
 
+function updateDeciderPlaceholders(provider) {
+  if (provider === "openai") {
+    settingsDeciderModel.placeholder = "e.g. gpt-4o-mini";
+    settingsDeciderKeyEnv.placeholder = "e.g. OPENAI_API_KEY";
+  } else if (provider === "gemini") {
+    settingsDeciderModel.placeholder = "e.g. gemini-1.5-flash";
+    settingsDeciderKeyEnv.placeholder = "e.g. GEMINI_API_KEY";
+  } else if (provider === "anthropic") {
+    settingsDeciderModel.placeholder = "e.g. claude-3-5-sonnet-latest";
+    settingsDeciderKeyEnv.placeholder = "e.g. ANTHROPIC_API_KEY";
+  }
+}
+
+settingsDeciderProvider.addEventListener("change", () => {
+  updateDeciderPlaceholders(settingsDeciderProvider.value);
+});
+
 settingsTargetSelect.addEventListener("change", () => {
   const targetName = settingsTargetSelect.value;
   settingsTargetSendMode.value = settingsSendModeByTarget[targetName] || "paste_enter";
@@ -437,6 +557,27 @@ shortcutLegend.addEventListener("click", (event) => {
 
 settingsTestButton.addEventListener("click", () => {
   void testSelectedTarget();
+});
+
+copyResponseButton.addEventListener("click", () => {
+  const text = responseTextContainer.innerText;
+  if (!text) return;
+  navigator.clipboard.writeText(text)
+    .then(() => {
+      const oldText = copyResponseButton.textContent;
+      copyResponseButton.textContent = "Copied!";
+      setTimeout(() => {
+        copyResponseButton.textContent = oldText;
+      }, 1500);
+    })
+    .catch((err) => {
+      setStatus("Failed to copy response: " + String(err), "error");
+    });
+});
+
+clearResponseButton.addEventListener("click", () => {
+  responsePanel.classList.add("hidden");
+  responseTextContainer.innerHTML = "";
 });
 
 promptInput.addEventListener("keydown", (event) => {

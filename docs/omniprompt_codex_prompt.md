@@ -1,5 +1,9 @@
 # OmniRouter Codex Prompt
 
+This file is the original MVP build prompt for OmniRouter.
+
+It is not the current product spec and does not reflect later additions such as router-backed `auto` targets, direct `api` targets, settings, menu bar behavior, or inline API responses.
+
 Build a very small macOS-first desktop app named **OmniRouter**.
 
 ## Goal

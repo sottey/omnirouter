@@ -34,10 +34,10 @@ wails dev
 wails build
 ```
 
-5. If you want to build a direct runnable binary with `go build`, you must include the Wails production tag:
+5. If you want to build a direct runnable desktop binary with `go build`, build the repo root and include the Wails production tag:
 
 ```bash
-go build -tags production -o omnirouter
+go build -tags production -o omnirouter .
 ./omnirouter
 ```
 
@@ -46,6 +46,41 @@ Running a binary produced by plain `go build` without `-tags production` will pa
 ```text
 Wails applications will not build without the correct build tags.
 ```
+
+## CLI
+
+Build the CLI command:
+
+```bash
+go build -o omnirouter-cli ./cmd/omnirouter-cli
+```
+
+Run with an explicit prompt:
+
+```bash
+./omnirouter-cli send --target ChatGPT --prompt "Summarize this codebase."
+```
+
+Run with stdin:
+
+```bash
+cat prompt.txt | ./omnirouter-cli send --target Auto
+```
+
+CLI flags:
+- `-config`: path to config file, default `config.json`
+- `-target`: target name from config, required
+- `-prompt`: prompt text; if omitted, stdin is used
+
+Running `./omnirouter-cli` with no arguments shows the Cobra help output.
+
+For `api` targets, the CLI writes the response to stdout.
+For `auto` targets, the selected routed target is written to stderr when it differs from the requested target.
+
+## Commands
+
+- Desktop app entrypoint: repo root (`wails build`, `wails dev`, or `go build -tags production .`)
+- CLI entrypoint: `./cmd/omnirouter-cli`
 
 ## macOS Accessibility Permission
 
@@ -207,7 +242,7 @@ chmod 600 ~/.omnirouter.env
 2. Build the runnable binary:
 
 ```bash
-go build -tags production -o omnirouter
+go build -tags production -o omnirouter .
 ```
 
 3. Install login auto-start:

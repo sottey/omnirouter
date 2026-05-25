@@ -4,8 +4,9 @@ import (
 	"context"
 	"embed"
 	"fmt"
+	omnirouterconfig "omnirouter/internal/config"
+	"omnirouter/internal/core"
 	stdruntime "runtime"
-	"time"
 
 	"github.com/wailsapp/wails/v2"
 	"github.com/wailsapp/wails/v2/pkg/options"
@@ -18,8 +19,8 @@ var assets embed.FS
 
 type App struct {
 	ctx          context.Context
-	config       *Config
 	configPath   string
+	service      *core.Service
 	launcherMode bool
 	windowHidden bool
 	quitting     bool
@@ -27,12 +28,18 @@ type App struct {
 }
 
 func NewApp(config *Config, configPath string) *App {
-	return &App{config: config, configPath: configPath}
+	return &App{
+		configPath: configPath,
+		service:    core.NewService(configPath, config),
+	}
 }
 
 func (a *App) startup(ctx context.Context) {
 	a.ctx = ctx
-	a.windowHidden = !a.config.ShouldShowWindowOnStartup()
+	config, err := a.service.GetConfig()
+	if err == nil {
+		a.windowHidden = !config.ShouldShowWindowOnStartup()
+	}
 	activeApp = a
 	setupMenuBar(ctx)
 	setDockVisible(!a.windowHidden)
@@ -56,81 +63,28 @@ func (a *App) beforeClose(ctx context.Context) bool {
 }
 
 func (a *App) GetTargets() ([]Target, error) {
-	if a.config == nil {
-		return nil, fmt.Errorf("config not loaded")
+	config, err := a.service.GetConfig()
+	if err != nil {
+		return nil, err
 	}
 
-	return a.config.Targets, nil
+	return config.Targets, nil
 }
 
 func (a *App) GetConfig() (Config, error) {
-	if a.config == nil {
-		return Config{}, fmt.Errorf("config not loaded")
-	}
-
-	return *a.config, nil
+	return a.service.GetConfig()
 }
 
 func (a *App) SaveConfig(config Config) error {
-	if err := config.ApplyDefaultsAndValidate(); err != nil {
-		return err
-	}
-
-	if err := WriteConfig(a.configPath, &config); err != nil {
-		return err
-	}
-
-	a.config = &config
-	return nil
+	return a.service.SaveConfig(config)
 }
 
 func (a *App) SendPrompt(targetName string, prompt string) (SendPromptResult, error) {
-	if a.config == nil {
-		return SendPromptResult{}, fmt.Errorf("config not loaded")
-	}
-
-	target, chosenTargetName, err := ResolveTarget(a.config, targetName, prompt)
-	if err != nil {
-		return SendPromptResult{}, err
-	}
-
-	if target.Type == "api" {
-		responseText, err := CallLLMAPI(target.Provider, target.Model, target.APIKeyEnv, target.SystemPrompt, prompt)
-		if err != nil {
-			return SendPromptResult{}, err
-		}
-		return SendPromptResult{
-			TargetName:   chosenTargetName,
-			ResponseText: responseText,
-			IsAPI:        true,
-		}, nil
-	}
-
-	if err := SendPromptToTarget(*target, prompt); err != nil {
-		return SendPromptResult{}, err
-	}
-
-	return SendPromptResult{
-		TargetName: chosenTargetName,
-		IsAPI:      false,
-	}, nil
+	return a.service.SendPrompt(targetName, prompt)
 }
 
 func (a *App) TestTarget(targetName string) error {
-	if a.config == nil {
-		return fmt.Errorf("config not loaded")
-	}
-
-	target, err := a.config.FindTargetByName(targetName)
-	if err != nil {
-		return err
-	}
-	if target.Type == "auto" {
-		return fmt.Errorf("test target must not be auto")
-	}
-
-	testPrompt := fmt.Sprintf("OmniRouter test message (%s)", time.Now().Format(time.RFC3339))
-	return SendPromptToTarget(*target, testPrompt)
+	return a.service.TestTarget(targetName)
 }
 
 func (a *App) ShowMainWindow() {
@@ -178,9 +132,14 @@ func (a *App) ShowLauncherWindow() {
 		return
 	}
 
+	config, err := a.service.GetConfig()
+	if err != nil {
+		return
+	}
+
 	a.launcherMode = true
 	setDockVisible(true)
-	rt.WindowSetSize(a.ctx, a.config.GetLauncherWindowWidth(760), a.config.GetLauncherWindowHeight(280))
+	rt.WindowSetSize(a.ctx, config.GetLauncherWindowWidth(760), config.GetLauncherWindowHeight(280))
 	rt.WindowCenter(a.ctx)
 	rt.WindowUnminimise(a.ctx)
 	rt.WindowShow(a.ctx)
@@ -211,10 +170,6 @@ func (a *App) Quit() {
 }
 
 func (a *App) SaveWindowState() error {
-	if a.config == nil {
-		return fmt.Errorf("config not loaded")
-	}
-
 	if a.ctx == nil || a.launcherMode {
 		return nil
 	}
@@ -226,7 +181,7 @@ func (a *App) SaveWindowState() error {
 		return fmt.Errorf("window size must be positive")
 	}
 
-	latestConfig, err := LoadConfig(a.configPath)
+	latestConfig, err := omnirouterconfig.LoadConfig(a.configPath)
 	if err != nil {
 		return err
 	}
@@ -244,22 +199,16 @@ func (a *App) SaveWindowState() error {
 	latestConfig.WindowX = &x
 	latestConfig.WindowY = &y
 
-	if err := WriteConfig(a.configPath, latestConfig); err != nil {
+	if err := omnirouterconfig.WriteConfig(a.configPath, latestConfig); err != nil {
 		return err
 	}
 
-	a.config = latestConfig
+	a.service = core.NewService(a.configPath, latestConfig)
 	return nil
 }
 
 func (a *App) ReloadConfig() error {
-	config, err := LoadConfig(a.configPath)
-	if err != nil {
-		return err
-	}
-
-	a.config = config
-	return nil
+	return a.service.ReloadConfig()
 }
 
 func (a *App) HandleGlobalHotkey() {
@@ -267,8 +216,13 @@ func (a *App) HandleGlobalHotkey() {
 		return
 	}
 
+	config, err := a.service.GetConfig()
+	if err != nil {
+		return
+	}
+
 	if a.windowHidden || rt.WindowIsMinimised(a.ctx) {
-		if a.config.GetHotkeyMode() == "launcher" {
+		if config.GetHotkeyMode() == "launcher" {
 			a.ShowLauncherWindow()
 			return
 		}
@@ -281,11 +235,16 @@ func (a *App) HandleGlobalHotkey() {
 }
 
 func (a *App) applyStoredWindowPosition() {
-	if a.ctx == nil || a.config == nil {
+	if a.ctx == nil {
 		return
 	}
 
-	x, y, ok := a.config.GetWindowPosition()
+	config, err := a.service.GetConfig()
+	if err != nil {
+		return
+	}
+
+	x, y, ok := config.GetWindowPosition()
 	if !ok {
 		return
 	}
@@ -293,16 +252,15 @@ func (a *App) applyStoredWindowPosition() {
 	rt.WindowSetPosition(a.ctx, x, y)
 }
 
-func main() {
-	configPath := "config.json"
-	config, err := LoadConfig(configPath)
+func runDesktopApp(configPath string) error {
+	config, err := omnirouterconfig.LoadConfig(configPath)
 	if err != nil {
-		panic(err)
+		return err
 	}
 
 	app := NewApp(config, configPath)
 
-	err = wails.Run(&options.App{
+	return wails.Run(&options.App{
 		Title:       "OmniRouter",
 		Width:       config.GetWindowWidth(900),
 		Height:      config.GetWindowHeight(640),
@@ -317,7 +275,10 @@ func main() {
 			app,
 		},
 	})
-	if err != nil {
+}
+
+func main() {
+	if err := runDesktopApp("config.json"); err != nil {
 		panic(err)
 	}
 }
